@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#070b12" id="metaTheme" />
+<title>Report Manager</title>
+<style>
+/* ============ THEME TOKENS ============ */
+:root{
+  --bg:#070b12; --bg-elev:#0e1521;
+  --surface:rgba(255,255,255,.045); --surface-2:rgba(255,255,255,.075); --surface-3:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.09); --border-strong:rgba(255,255,255,.18);
+  --text:#e8eef8; --text-2:#a9b7c9; --muted:#7d8da3;
+  --accent:#25d366; --accent-soft:rgba(37,211,102,.14); --accent-text:#6ee7a8;
+  --blue:#3b82f6; --blue-soft:rgba(59,130,246,.16); --blue-text:#93c5fd;
+  --amber:#f59e0b; --amber-soft:rgba(245,158,11,.16); --amber-text:#fcd34d;
+  --red:#ef4444; --red-soft:rgba(239,68,68,.16); --red-text:#fca5a5;
+  --slate:#94a3b8; --slate-soft:rgba(148,163,184,.14); --slate-text:#cbd5e1;
+  --violet:#8b5cf6; --violet-soft:rgba(139,92,246,.16); --violet-text:#c4b5fd;
+  --track:rgba(255,255,255,.08);
+  --shadow:0 20px 45px -22px rgba(0,0,0,.9);
+  --shadow-sm:0 10px 24px -16px rgba(0,0,0,.9);
+  --radius:20px; --radius-sm:14px; --radius-xs:10px;
+  --nav-bg:rgba(14,21,33,.82); --appbar-bg:rgba(7,11,18,.72);
+  --sheet-bg:#101825; --input-bg:rgba(255,255,255,.05);
+}
+[data-theme="light"]{
+  --bg:#eef2f8; --bg-elev:#fff;
+  --surface:rgba(255,255,255,.8); --surface-2:rgba(255,255,255,.96); --surface-3:#fff;
+  --border:rgba(15,23,42,.08); --border-strong:rgba(15,23,42,.18);
+  --text:#0d1526; --text-2:#46536b; --muted:#6b7a92;
+  --accent:#12b981; --accent-soft:rgba(18,185,129,.13); --accent-text:#0a7a55;
+  --blue-soft:rgba(59,130,246,.13); --blue-text:#1d4ed8;
+  --amber-soft:rgba(245,158,11,.16); --amber-text:#b45309;
+  --red-soft:rgba(239,68,68,.13); --red-text:#b91c1c;
+  --slate-soft:rgba(100,116,139,.13); --slate-text:#475569;
+  --violet-soft:rgba(139,92,246,.13); --violet-text:#6d28d9;
+  --track:rgba(15,23,42,.08);
+  --shadow:0 20px 45px -26px rgba(15,23,42,.4);
+  --shadow-sm:0 10px 24px -18px rgba(15,23,42,.5);
+  --nav-bg:rgba(255,255,255,.88); --appbar-bg:rgba(238,242,248,.78);
+  --sheet-bg:#fff; --input-bg:rgba(15,23,42,.035);
+}
+
+/* ============ RESET ============ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Inter','Helvetica Neue',Arial,sans-serif;
+  background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;
+  transition:background .35s ease,color .35s ease;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 12% -12%,rgba(37,211,102,.17),transparent 62%),
+    radial-gradient(720px 520px at 104% 2%,rgba(34,211,238,.13),transparent 58%),
+    radial-gradient(860px 620px at 50% 118%,rgba(139,92,246,.13),transparent 62%);
+}
+[data-theme="light"] body::before{
+  background:
+    radial-gradient(900px 520px at 12% -12%,rgba(18,185,129,.14),transparent 62%),
+    radial-gradient(720px 520px at 104% 2%,rgba(59,130,246,.10),transparent 58%);
+}
+h1,h2,h3,h4,p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+a{color:var(--accent);text-decoration:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
+input,select,textarea{-webkit-appearance:none;appearance:none}
+
+/* ============ SPLASH ============ */
+.splash{
+  position:fixed;inset:0;z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:var(--bg);transition:opacity .45s ease,visibility .45s;
+}
+.splash.hide{opacity:0;visibility:hidden}
+.splash__logo{
+  width:82px;height:82px;border-radius:26px;display:grid;place-items:center;
+  font-size:40px;background:var(--accent-soft);border:1px solid var(--accent);
+  box-shadow:0 20px 50px -18px var(--accent);animation:pop .6s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes pop{from{transform:scale(.5);opacity:0}}
+.splash__title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:12px}
+.splash__sub{font-size:12px;color:var(--muted);font-weight:600}
+.splash__bar{
+  width:140px;height:4px;border-radius:99px;background:var(--track);
+  overflow:hidden;margin-top:16px;
+}
+.splash__bar span{
+  display:block;height:100%;background:var(--accent);border-radius:99px;
+  animation:load 1.2s ease forwards;
+}
+@keyframes load{from{width:0}to{width:100%}}
+
+/* ============ SHELL ============ */
+#app{position:relative;z-index:1;max-width:540px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+
+.appbar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;
+  background:linear-gradient(180deg,var(--appbar-bg) 55%,transparent);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+}
+.appbar__text{flex:1;min-width:0}
+.appbar__text h1{font-size:20px;font-weight:800;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar__text p{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{
+  flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center;
+  border-radius:13px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);
+  transition:transform .18s ease,background .2s ease,color .2s ease;
+}
+.iconbtn:active{transform:scale(.92);background:var(--surface-3)}
+.iconbtn--accent{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft)}
+.iconbtn[hidden]{display:none}
+
+.view{flex:1;padding:6px 16px calc(112px + env(safe-area-inset-bottom,0px));animation:fadeUp .32s cubic-bezier(.22,.9,.3,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.bottomnav{
+  position:fixed;z-index:50;left:50%;transform:translateX(-50%);
+  bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  width:min(508px,calc(100% - 24px));
+  display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:7px;
+  background:var(--nav-bg);border:1px solid var(--border);border-radius:22px;
+  backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);
+  box-shadow:var(--shadow);
+}
+.navbtn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:9px 2px 8px;border-radius:15px;color:var(--muted);
+  font-size:10px;font-weight:700;letter-spacing:.1px;
+  transition:color .22s ease,background .22s ease,transform .18s ease;
+}
+.navbtn:active{transform:scale(.94)}
+.navbtn.active{color:var(--accent);background:var(--accent-soft)}
+
+/* ============ CARDS ============ */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;backdrop-filter:blur(16px) saturate(130%);
+  -webkit-backdrop-filter:blur(16px) saturate(130%);box-shadow:var(--shadow-sm);
+}
+.card+.card,.card+.section,.section+.card,.section+.section{margin-top:14px}
+.section{margin-top:20px}
+.section__head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;padding:0 2px}
+.section__head h3{font-size:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.section__link{
+  font-size:12px;font-weight:700;color:var(--accent);
+  display:inline-flex;align-items:center;gap:3px;
+}
+
+/* ============ HERO ============ */
+.hero{position:relative;overflow:hidden}
+.hero::after{
+  content:'';position:absolute;top:-60px;right:-50px;width:170px;height:170px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent-soft),transparent 70%);pointer-events:none;
+}
+.hero__row{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.hero__eyebrow{font-size:11.5px;color:var(--muted);font-weight:600}
+.hero__title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin:3px 0 4px}
+.hero__sub{font-size:12px;color:var(--text-2);line-height:1.5}
+.hero .progress{margin-top:16px}
+.hero__legend{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font-size:10.5px;color:var(--muted);font-weight:600}
+
+/* ============ RING ============ */
+.ring{
+  flex:0 0 auto;width:66px;height:66px;border-radius:50%;
+  background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--track) 0);
+  display:grid;place-items:center;transition:background .7s cubic-bezier(.3,0,.2,1);
+}
+.ring__inner{
+  width:52px;height:52px;border-radius:50%;background:var(--bg-elev);
+  display:grid;place-items:center;font-size:13px;font-weight:800;
+  letter-spacing:-.4px;border:1px solid var(--border);
+}
+
+/* ============ STATS ============ */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.stat{
+  position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  animation:fadeUp .4s backwards;
+}
+.stat:nth-child(1){animation-delay:.04s}
+.stat:nth-child(2){animation-delay:.08s}
+.stat:nth-child(3){animation-delay:.12s}
+.stat:nth-child(4){animation-delay:.16s}
+.stat__top{display:flex;align-items:center;justify-content:space-between}
+.stat__icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center}
+.stat__value{font-size:27px;font-weight:800;letter-spacing:-1px;margin-top:10px;line-height:1}
+.stat__label{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;letter-spacing:.2px}
+.stat__bar{height:3px;border-radius:99px;background:var(--track);margin-top:10px;overflow:hidden}
+.stat__bar i{display:block;height:100%;border-radius:99px;transition:width .8s cubic-bezier(.3,0,.2,1)}
+
+/* ============ BADGE ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+  font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;
+}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge--pending{background:var(--slate-soft);color:var(--slate-text)}
+.badge--processing{background:var(--blue-soft);color:var(--blue-text)}
+.badge--completed{background:var(--accent-soft);color:var(--accent-text)}
+.badge--failed{background:var(--red-soft);color:var(--red-text)}
+.badge--cancelled{background:var(--slate-soft);color:var(--slate-text);opacity:.8}
+.badge--low{background:var(--slate-soft);color:var(--slate-text)}
+.badge--medium{background:var(--blue-soft);color:var(--blue-text)}
+.badge--high{background:var(--amber-soft);color:var(--amber-text)}
+.badge--urgent{background:var(--red-soft);color:var(--red-text)}
+
+/* ============ PROGRESS ============ */
+.progress{height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.progress--sm{height:5px}
+.progress__fill{
+  height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),#22d3ee);
+  transition:width .7s cubic-bezier(.3,0,.2,1);
+}
+.progress__fill.is-processing{background:linear-gradient(90deg,#3b82f6,#22d3ee)}
+.progress__fill.is-failed{background:linear-gradient(90deg,#ef4444,#f59e0b)}
+.progress__fill.is-cancelled{background:var(--slate)}
+
+/* ============ CHART ============ */
+.chart{display:flex;align-items:flex-end;gap:6px;height:132px;padding-top:20px}
+.chart__col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;gap:6px}
+.chart__val{font-size:10px;font-weight:800;color:var(--text-2);height:12px}
+.chart__track{flex:1;width:100%;display:flex;align-items:flex-end}
+.chart__bar{
+  width:100%;border-radius:7px 7px 4px 4px;
+  background:linear-gradient(180deg,var(--accent),rgba(37,211,102,.25));
+  min-height:4px;animation:growBar .65s cubic-bezier(.3,0,.2,1) backwards;
+}
+.chart__bar.is-zero{background:var(--track)}
+.chart__label{font-size:9.5px;font-weight:700;color:var(--muted)}
+@keyframes growBar{from{height:0;opacity:.3}}
+
+/* ============ TARGET LIST ============ */
+.list{display:flex;flex-direction:column;gap:10px}
+.titem{
+  display:block;width:100%;text-align:left;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:transform .18s ease,border-color .2s ease;
+  animation:fadeUp .35s backwards;
+}
+.titem:active{transform:scale(.985);border-color:var(--border-strong)}
+.titem__top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.titem__phone{font-size:15px;font-weight:800;letter-spacing:-.2px;word-break:break-all}
+.titem__meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.titem__reason{
+  font-size:12px;color:var(--text-2);margin-top:9px;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.titem__foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px}
+.titem__time{font-size:10.5px;color:var(--muted);font-weight:600}
+.titem__pct{font-size:10.5px;font-weight:800;color:var(--text-2)}
+
+/* ============ TIMELINE ============ */
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--border)}
+.tl-item{position:relative;padding-bottom:18px;animation:fadeUp .35s backwards}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{
+  content:'';position:absolute;left:-24px;top:5px;width:10px;height:10px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--accent-soft);
+}
+.tl-item[data-tone="blue"]::before{background:var(--blue);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--blue-soft)}
+.tl-item[data-tone="red"]::before{background:var(--red);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--red-soft)}
+.tl-item[data-tone="amber"]::before{background:var(--amber);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--amber-soft)}
+.tl-item[data-tone="slate"]::before{background:var(--slate);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--slate-soft)}
+.tl-item[data-tone="violet"]::before{background:var(--violet);box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px var(--violet-soft)}
+.tl__time{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.3px}
+.tl__text{font-size:13px;font-weight:600;margin-top:3px;line-height:1.45}
+.tl__sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.daysep{
+  display:flex;align-items:center;gap:10px;margin:18px 0 14px;
+  font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;
+}
+.daysep::after{content:'';flex:1;height:1px;background:var(--border)}
+.daysep:first-child{margin-top:4px}
+
+/* ============ FORM ============ */
+.field{margin-bottom:15px}
+.field__label{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text-2);margin-bottom:7px;letter-spacing:.3px}
+.field__hint{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:6px;line-height:1.5}
+.field__err{font-size:11px;color:var(--red-text);font-weight:700;margin-top:6px;display:none}
+.field.has-error .field__err{display:block}
+.field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--red)}
+input,select,textarea{
+  width:100%;padding:13px 14px;background:var(--input-bg);
+  border:1.5px solid var(--border);border-radius:var(--radius-xs);
+  font-size:14.5px;font-weight:500;outline:none;
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+textarea{resize:vertical;min-height:92px;line-height:1.55;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
+select{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237d8da3' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;
+}
+[data-theme="light"] select{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7a92' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+}
+.input-row{display:flex;gap:10px}
+.input-row .field{flex:1;margin-bottom:0}
+.input-row .field--dial{flex:0 0 108px}
+
+/* ============ SEGMENT ============ */
+.seg{
+  display:flex;gap:5px;padding:5px;background:var(--input-bg);
+  border:1px solid var(--border);border-radius:var(--radius-xs);
+  overflow-x:auto;scrollbar-width:none;
+}
+.seg::-webkit-scrollbar{display:none}
+.seg__btn{
+  flex:1;min-width:max-content;padding:9px 12px;border-radius:8px;
+  background:transparent;color:var(--muted);font-size:12px;font-weight:800;
+  white-space:nowrap;transition:all .2s ease;
+}
+.seg__btn.active{background:var(--accent);color:#04170d;box-shadow:0 8px 18px -10px var(--accent)}
+[data-theme="light"] .seg__btn.active{color:#fff}
+
+/* ============ CHIPS ============ */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:8px 12px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);font-size:11.5px;font-weight:700;
+  transition:all .2s ease;
+}
+.chip:active{transform:scale(.95)}
+.chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 16px;border-radius:var(--radius-xs);
+  background:var(--accent);color:#04170d;font-size:14.5px;font-weight:800;
+  letter-spacing:.1px;transition:transform .16s ease,filter .2s,opacity .2s;
+  box-shadow:0 14px 28px -16px var(--accent);
+}
+[data-theme="light"] .btn{color:#fff}
+.btn:active{transform:scale(.97);filter:brightness(.94)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn--ghost{background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn--danger{background:var(--red-soft);color:var(--red-text);border:1px solid transparent;box-shadow:none}
+.btn--sm{padding:10px 14px;font-size:12.5px;width:auto}
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.btn-row .btn{flex:1}
+
+/* ============ SETTINGS ROWS ============ */
+.srow{
+  display:flex;align-items:center;gap:13px;padding:14px 4px;
+  border-bottom:1px solid var(--border);width:100%;text-align:left;
+}
+.srow:last-child{border-bottom:none}
+.srow--btn{cursor:pointer;border-radius:12px;transition:background .2s;border-left:none;border-right:none;border-top:none;background:transparent}
+.srow--btn:active{background:var(--surface-2)}
+.srow__icon{
+  flex:0 0 auto;width:38px;height:38px;border-radius:12px;
+  display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--border);
+}
+.srow__body{flex:1;min-width:0}
+.srow__title{font-size:13.5px;font-weight:700}
+.srow__desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.srow--danger .srow__title{color:var(--red-text)}
+
+/* ============ SWITCH ============ */
+.switch{
+  position:relative;flex:0 0 auto;width:48px;height:28px;border-radius:99px;
+  background:var(--track);border:1px solid var(--border);transition:background .25s ease;
+}
+.switch::after{
+  content:'';position:absolute;top:2.5px;left:3px;width:21px;height:21px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);
+  transition:transform .25s cubic-bezier(.3,1.4,.5,1);
+}
+.switch.on{background:var(--accent);border-color:transparent}
+.switch.on::after{transform:translateX(20px)}
+
+/* ============ EMPTY ============ */
+.empty{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:46px 24px;gap:6px;animation:fadeUp .4s;
+}
+.empty__art{
+  width:84px;height:84px;border-radius:26px;display:grid;place-items:center;
+  margin-bottom:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--accent);
+}
+.empty__title{font-size:15.5px;font-weight:800}
+.empty__text{font-size:12.5px;color:var(--muted);line-height:1.6;max-width:270px}
+.empty .btn{width:auto;margin-top:14px}
+
+/* ============ TOAST ============ */
+.toast-wrap{
+  position:fixed;z-index:200;left:50%;transform:translateX(-50%);
+  top:calc(env(safe-area-inset-top,0px) + 12px);
+  width:min(500px,calc(100% - 24px));
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast{
+  display:flex;align-items:flex-start;gap:11px;padding:13px 14px;
+  background:var(--sheet-bg);border:1px solid var(--border);
+  border-radius:14px;box-shadow:var(--shadow);
+  animation:toastIn .35s cubic-bezier(.3,1.3,.5,1);
+  pointer-events:auto;
+}
+.toast.out{animation:toastOut .3s forwards}
+.toast__ic{
+  flex:0 0 auto;width:34px;height:34px;border-radius:11px;
+  display:grid;place-items:center;
+}
+.toast__ic.success{background:var(--accent-soft);color:var(--accent-text)}
+.toast__ic.error{background:var(--red-soft);color:var(--red-text)}
+.toast__ic.info{background:var(--blue-soft);color:var(--blue-text)}
+.toast__ic.warn{background:var(--amber-soft);color:var(--amber-text)}
+.toast__body{flex:1;min-width:0}
+.toast__title{font-size:13px;font-weight:800}
+.toast__msg{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px) scale(.96)}}
+
+/* ============ BOTTOM SHEET / MODAL ============ */
+.sheet-backdrop{
+  position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  animation:fadeIn .25s;display:flex;align-items:flex-end;justify-content:center;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:min(540px,100%);max-height:88dvh;overflow-y:auto;
+  background:var(--sheet-bg);border-radius:24px 24px 0 0;
+  border:1px solid var(--border);border-bottom:none;
+  padding:8px 18px calc(24px + env(safe-area-inset-bottom,0px));
+  animation:sheetUp .38s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 -20px 60px -20px rgba(0,0,0,.7);
+}
+@keyframes sheetUp{from{transform:translateY(60px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.sheet__grab{width:42px;height:4px;border-radius:99px;background:var(--border-strong);margin:6px auto 14px}
+.sheet__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sheet__title{font-size:18px;font-weight:800;letter-spacing:-.4px}
+.sheet__sub{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+
+/* ============ DETAIL BOXES ============ */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dcell{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px}
+.dcell__k{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.dcell__v{font-size:13px;font-weight:700;margin-top:5px;word-break:break-word;line-height:1.4}
+.dcell--wide{grid-column:span 2}
+
+/* ============ MISC ============ */
+.rowspace{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.muted{color:var(--muted)}
+.small{font-size:11.5px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.loading-inline{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash__logo">🛡️</div>
+  <div class="splash__title">Report Manager</div>
+  <div class="splash__sub">Memuat data lokal…</div>
+  <div class="splash__bar"><span></span></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="appbar">
+    <button class="iconbtn" id="btnBack" hidden aria-label="Kembali"></button>
+    <div class="appbar__text">
+      <h1 id="pageTitle">Dashboard</h1>
+      <p id="pageSub">Ringkasan</p>
+    </div>
+    <button class="iconbtn" id="btnTheme" aria-label="Ganti tema"></button>
+  </header>
+  <main class="view" id="view"></main>
+</div>
+
+<nav class="bottomnav" id="bottomnav" aria-label="Navigasi utama"></nav>
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="sheetRoot"></div>
+
+<script>
+/* =====================================================================
+   REPORT MANAGER — app.js (all-in-one)
+   ===================================================================== */
+
+/* ============================== ICONS ============================== */
+const ICONS = {
+  back: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`,
+  sun:  `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+  moon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  dash: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>`,
+  target:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>`,
+  act:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>`,
+  hist: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>`,
+  set:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  plus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  trash:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+  edit: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`,
+  down: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>`,
+  up:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>`,
+  check:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>`,
+  warn: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>`,
+  x:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  clock:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+  shield:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  ext:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>`,
+  search:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>`,
+  flag: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>`,
+};
+
+/* ============================== STORAGE ============================== */
+const Store = (() => {
+  const K_TARGETS = 'rm.targets.v1';
+  const K_HISTORY = 'rm.history.v1';
+  const K_SETTINGS= 'rm.settings.v1';
+
+  const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){ console.error(e);} };
+
+  let targets = load(K_TARGETS, []);
+  let history = load(K_HISTORY, []);
+  let settings = Object.assign({ theme:'dark', notifications:true }, load(K_SETTINGS, {}));
+
+  return {
+    getTargets: () => targets.slice(),
+    getTarget: (id) => targets.find(t => t.id === id),
+    getHistory: () => history.slice(),
+    getSettings: () => ({ ...settings }),
+
+    addTarget(t) { targets.unshift(t); save(K_TARGETS, targets); return t; },
+    updateTarget(id, patch) {
+      const i = targets.findIndex(t=>t.id===id);
+      if (i<0) return null;
+      targets[i] = { ...targets[i], ...patch, updatedAt: Date.now() };
+      save(K_TARGETS, targets);
+      return targets[i];
+    },
+    deleteTarget(id) {
+      targets = targets.filter(t=>t.id!==id);
+      save(K_TARGETS, targets);
+    },
+    addHistory(h) {
+      history.unshift(h);
+      if (history.length > 1000) history.length = 1000;
+      save(K_HISTORY, history);
+      return h;
+    },
+    clearHistory() { history = []; save(K_HISTORY, history); },
+    setSettings(patch) {
+      settings = { ...settings, ...patch };
+      save(K_SETTINGS, settings);
+      return settings;
+    },
+    exportAll() {
+      return {
+        app: 'Report Manager', version: 1, exportedAt: new Date().toISOString(),
+        targets, history, settings
+      };
+    },
+    importAll(obj) {
+      if (!obj || typeof obj !== 'object') throw new Error('Format tidak valid');
+      if (Array.isArray(obj.targets)) { targets = obj.targets; save(K_TARGETS, targets); }
+      if (Array.isArray(obj.history)) { history = obj.history; save(K_HISTORY, history); }
+      if (obj.settings && typeof obj.settings==='object') {
+        settings = { ...settings, ...obj.settings };
+        save(K_SETTINGS, settings);
+      }
+    },
+    resetAll() {
+      targets = []; history = []; settings = { theme:'dark', notifications:true };
+      save(K_TARGETS, targets); save(K_HISTORY, history); save(K_SETTINGS, settings);
+    }
+  };
+})();
+
+/* ============================== HELPERS ============================== */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const fmtDate = ts => {
+  const d = new Date(ts);
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+};
+const fmtTime = ts => {
+  const d = new Date(ts);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const fmtDT = ts => `${fmtDate(ts)} ${fmtTime(ts)}`;
+const relTime = ts => {
+  const s = Math.floor((Date.now()-ts)/1000);
+  if (s < 60) return 'baru saja';
+  if (s < 3600) return `${Math.floor(s/60)} mnt lalu`;
+  if (s < 86400) return `${Math.floor(s/3600)} jam lalu`;
+  if (s < 604800) return `${Math.floor(s/86400)} hari lalu`;
+  return fmtDate(ts);
+};
+const sameDay = (a,b) => { const x=new Date(a),y=new Date(b); return x.getFullYear()===y.getFullYear()&&x.getMonth()===y.getMonth()&&x.getDate()===y.getDate(); };
+const dayLabel = ts => {
+  const t = new Date(ts), today = new Date(), yest = new Date(); yest.setDate(today.getDate()-1);
+  if (sameDay(ts, today)) return 'Hari Ini';
+  if (sameDay(ts, yest)) return 'Kemarin';
+  return t.toLocaleDateString('id-ID',{ weekday:'long', day:'numeric', month:'long', year:'numeric' });
+};
+
+/* ============================== TOAST ============================== */
+const toastWrap = document.getElementById('toastWrap');
+function toast(title, msg='', type='info', ms=2800) {
+  if (!Store.getSettings().notifications && type !== 'error') return;
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const iconKey = type==='success'?'check':type==='error'?'x':type==='warn'?'warn':'info';
+  el.innerHTML = `
+    <div class="toast__ic ${type}">${ICONS[iconKey]}</div>
+    <div class="toast__body">
+      <div class="toast__title">${esc(title)}</div>
+      ${msg?`<div class="toast__msg">${esc(msg)}</div>`:''}
+    </div>
+  `;
+  toastWrap.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(), 300); }, ms);
+}
+
+/* ============================== CONSTANTS ============================== */
+const STATUS = {
+  pending:    { label:'Pending',    color:'slate' },
+  processing: { label:'Processing', color:'blue' },
+  completed:  { label:'Completed',  color:'green' },
+  failed:     { label:'Failed',     color:'red' },
+  cancelled:  { label:'Cancelled',  color:'slate' },
+};
+const PRIORITY = {
+  low:    { label:'Rendah' },
+  medium: { label:'Sedang' },
+  high:   { label:'Tinggi' },
+  urgent: { label:'Urgent' },
+};
+const REASONS = ['Spam / Pesan Massal','Penipuan / Scam','Penipuan Online Shop','Konten Tidak Pantas','Peniruan Identitas','Ancaman / Perundungan','Lainnya'];
+const DIALS = [
+  { code:'+62', country:'Indonesia' }, { code:'+60', country:'Malaysia' },
+  { code:'+65', country:'Singapura' }, { code:'+63', country:'Filipina' },
+  { code:'+66', country:'Thailand' }, { code:'+84', country:'Vietnam' },
+  { code:'+91', country:'India' }, { code:'+1', country:'USA/Canada' },
+  { code:'+44', country:'UK' }, { code:'+81', country:'Jepang' }, { code:'+86', country:'China' },
+];
+const NOTE_SAFE = 'Status resmi hanya dapat dikonfirmasi melalui aplikasi WhatsApp. Aplikasi ini tidak menerima laporan otomatis dari WhatsApp.';
+
+/* ============================== ROUTER ============================== */
+const state = {
+  route: 'dashboard',
+  detailId: null,
+  filters: {
+    targetStatus: 'all',
+    targetSearch: '',
+    historyStatus: 'all',
+    historySearch: '',
+    historyFrom: '',
+    historyTo: '',
+    historySort: 'newest',
+  }
+};
+
+const PAGES = {
+  dashboard: { title:'Dashboard',  sub:'Ringkasan laporan manual', icon:'dash' },
+  targets:   { title:'Targets',    sub:'Daftar target laporan',    icon:'target' },
+  activity:  { title:'Activity',   sub:'Timeline aktivitas',       icon:'act' },
+  history:   { title:'History',    sub:'Riwayat lengkap',          icon:'hist' },
+  settings:  { title:'Settings',   sub:'Pengaturan aplikasi',      icon:'set' },
+};
+const NAV_ORDER = ['dashboard','targets','activity','history','settings'];
+
+const viewEl = document.getElementById('view');
+const pageTitleEl = document.getElementById('pageTitle');
+const pageSubEl = document.getElementById('pageSub');
+const btnBack = document.getElementById('btnBack');
+const btnTheme = document.getElementById('btnTheme');
+
+function navigate(route, opts={}) {
+  state.route = route;
+  if (opts.detailId !== undefined) state.detailId = opts.detailId;
+  render();
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+
+function render() {
+  // Page meta
+  const isDetail = state.route === 'detail';
+  const meta = isDetail ? { title:'Detail Target', sub:'Riwayat & catatan' } : (PAGES[state.route] || PAGES.dashboard);
+  pageTitleEl.textContent = meta.title;
+  pageSubEl.textContent = meta.sub;
+
+  btnBack.hidden = !isDetail;
+  btnBack.innerHTML = ICONS.back;
+  btnTheme.innerHTML = document.documentElement.dataset.theme === 'light' ? ICONS.moon : ICONS.sun;
+
+  // View
+  viewEl.innerHTML = '';
+  const node =
+    state.route==='dashboard' ? renderDashboard() :
+    state.route==='targets'   ? renderTargets()   :
+    state.route==='activity'  ? renderActivity()  :
+    state.route==='history'   ? renderHistory()   :
+    state.route==='settings'  ? renderSettings()  :
+    state.route==='detail'    ? renderDetail()    : renderDashboard();
+  viewEl.appendChild(node);
+
+  renderNav();
+}
+
+function renderNav() {
+  const nav = document.getElementById('bottomnav');
+  nav.innerHTML = '';
+  NAV_ORDER.forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'navbtn' + ((state.route===k || (k==='targets' && state.route==='detail')) ? ' active' : '');
+    b.innerHTML = `${ICONS[PAGES[k].icon]}<span>${PAGES[k].title}</span>`;
+    b.onclick = () => navigate(k);
+    nav.appendChild(b);
+  });
+}
+
+btnBack.onclick = () => navigate('targets');
+btnTheme.onclick = () => {
+  const cur = document.documentElement.dataset.theme;
+  const next = cur === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  Store.setSettings({ theme: next });
+  toast('Tema diubah', next==='dark'?'Mode gelap aktif':'Mode terang aktif', 'info', 1600);
+};
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  const meta = document.getElementById('metaTheme');
+  meta.setAttribute('content', t==='dark' ? '#070b12' : '#eef2f8');
+}
+
+/* ============================== BADGES ============================== */
+function statusBadge(s) {
+  const c = STATUS[s] || STATUS.pending;
+  return `<span class="badge badge--${s}"><span class="dot"></span>${esc(c.label)}</span>`;
+}
+function priorityBadge(p) {
+  const c = PRIORITY[p] || PRIORITY.medium;
+  return `<span class="badge badge--${p}">${esc(c.label)}</span>`;
+}
+
+/* ============================== PROGRESS ============================== */
+function progressOf(t) {
+  if (t.status === 'completed') return 100;
+  if (t.status === 'failed') return Math.min(85, 30 + (t.actions||0)*10);
+  if (t.status === 'cancelled') return Math.min(90, 20 + (t.actions||0)*5);
+  if (t.status === 'processing') return Math.min(85, 25 + (t.actions||0)*15);
+  return Math.min(20, 5 + (t.actions||0)*5);
+}
+function progressColor(t) {
+  if (t.status==='completed') return '';
+  if (t.status==='processing') return 'is-processing';
+  if (t.status==='failed') return 'is-failed';
+  if (t.status==='cancelled') return 'is-cancelled';
+  return '';
+}
+
+/* ============================== DASHBOARD ============================== */
+function renderDashboard() {
+  const wrap = document.createElement('div');
+  const targets = Store.getTargets();
+  const total = targets.length;
+  const processing = targets.filter(t=>t.status==='processing').length;
+  const completed = targets.filter(t=>t.status==='completed').length;
+  const failed = targets.filter(t=>t.status==='failed').length;
+  const pending = targets.filter(t=>t.status==='pending').length;
+  const overall = total ? Math.round((completed/total)*100) : 0;
+
+  // Recent activity
+  const history = Store.getHistory().slice(0,4);
+
+  // Weekly chart data (last 7 days)
+  const days = [];
+  const now = new Date();
+  for (let i=6;i>=0;i--) {
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    days.push(d);
+  }
+  const counts = days.map(d => Store.getHistory().filter(h => sameDay(h.time, d.getTime())).length);
+  const maxC = Math.max(1, ...counts);
+
+  wrap.innerHTML = `
+    <div class="card hero">
+      <div class="hero__row">
+        <div class="ring" style="--p:${overall}">
+          <div class="ring__inner">${overall}%</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="hero__eyebrow">Progres Keseluruhan</div>
+          <div class="hero__title">${completed}/${total || 0} selesai</div>
+          <div class="hero__sub">Pencatatan laporan manual — status aktual hanya terkonfirmasi via aplikasi WhatsApp.</div>
+        </div>
+      </div>
+      <div class="progress"><div class="progress__fill" style="width:${overall}%"></div></div>
+      <div class="hero__legend"><span>0%</span><span>${total} target</span><span>100%</span></div>
+    </div>
+
+    <div class="stats">
+      ${statCard('Total Target', total, 'target', 'blue')}
+      ${statCard('Diproses', processing, 'clock', 'blue')}
+      ${statCard('Selesai', completed, 'check', 'green')}
+      ${statCard('Gagal', failed, 'x', 'red')}
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h3>Aktivitas 7 Hari</h3>
+        <span class="small muted">${counts.reduce((a,b)=>a+b,0)} catatan</span>
+      </div>
+      <div class="card">
+        <div class="chart">
+          ${days.map((d,i)=>`
+            <div class="chart__col">
+              <div class="chart__val">${counts[i]||''}</div>
+              <div class="chart__track">
+                <div class="chart__bar ${counts[i]===0?'is-zero':''}" style="height:${Math.max(6,(counts[i]/maxC)*100)}%;animation-delay:${i*.05}s"></div>
+              </div>
+              <div class="chart__label">${d.toLocaleDateString('id-ID',{weekday:'short'})}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h3>Aktivitas Terbaru</h3>
+        <button class="section__link" id="goActivity">Lihat semua ${ICONS.ext}</button>
+      </div>
+      <div class="card">
+        ${history.length ? `
+          <div class="timeline">
+            ${history.map(h=>timelineItem(h)).join('')}
+          </div>
+        ` : emptyMini('Belum ada aktivitas','Mulai dengan menambahkan target laporan.')}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h3>Target Prioritas</h3>
+        <button class="section__link" id="goTargets">Kelola ${ICONS.ext}</button>
+      </div>
+      ${renderTargetList(
+        targets
+          .filter(t => t.status!=='completed' && t.status!=='cancelled')
+          .sort((a,b) => prioWeight(b.priority) - prioWeight(a.priority))
+          .slice(0,3)
+      ) || emptyMini('Belum ada target aktif','Tambahkan target baru dari halaman Targets.')}
+    </div>
+
+    <div class="section">
+      <div class="card" style="display:flex;gap:12px;align-items:flex-start">
+        <div class="srow__icon" style="color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft)">${ICONS.shield}</div>
+        <div style="flex:1">
+          <div class="srow__title">Catatan Penting</div>
+          <div class="srow__desc">${esc(NOTE_SAFE)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  wrap.querySelector('#goActivity').onclick = () => navigate('activity');
+  wrap.querySelector('#goTargets').onclick = () => navigate('targets');
+  wrap.querySelectorAll('[data-target-id]').forEach(el => {
+    el.onclick = () => navigate('detail', { detailId: el.dataset.targetId });
+  });
+  return wrap;
+}
+function prioWeight(p){ return ({urgent:4,high:3,medium:2,low:1})[p]||0; }
+
+function statCard(label, val, iconKey, tone) {
+  const map = {
+    blue:{c:'var(--blue-text)', b:'var(--blue-soft)', bar:'#3b82f6'},
+    green:{c:'var(--accent-text)', b:'var(--accent-soft)', bar:'#25d366'},
+    red:{c:'var(--red-text)', b:'var(--red-soft)', bar:'#ef4444'},
+    amber:{c:'var(--amber-text)', b:'var(--amber-soft)', bar:'#f59e0b'},
+  };
+  const t = map[tone];
+  return `
+    <div class="stat">
+      <div class="stat__top">
+        <div class="stat__icon" style="background:${t.b};color:${t.c}">${ICONS[iconKey]}</div>
+      </div>
+      <div class="stat__value">${val}</div>
+      <div class="stat__label">${label}</div>
+      <div class="stat__bar"><i style="width:${Math.min(100,val*8)}%;background:${t.bar}"></i></div>
+    </div>`;
+}
+
+function emptyMini(title, text) {
+  return `<div class="empty" style="padding:26px 12px">
+    <div class="empty__art" style="width:64px;height:64px;border-radius:20px">${ICONS.flag}</div>
+    <div class="empty__title">${esc(title)}</div>
+    <div class="empty__text">${esc(text)}</div>
+  </div>`;
+}
+
+/* ============================== TARGET LIST ============================== */
+function renderTargetList(list) {
+  if (!list.length) return '';
+  const el = document.createElement('div');
+  el.className = 'list';
+  el.innerHTML = list.map(t => `
+    <button class="titem" data-target-id="${t.id}">
+      <div class="titem__top">
+        <div style="flex:1;min-width:0">
+          <div class="titem__phone">${esc(t.phone)}</div>
+          <div class="titem__meta">
+            ${statusBadge(t.status)}
+            ${priorityBadge(t.priority)}
+            <span class="badge badge--medium">${ICONS.clock} ${esc(t.country || t.dial || '—')}</span>
+          </div>
+        </div>
+      </div>
+      <div class="titem__reason">${esc(t.reason)}</div>
+      <div class="titem__foot">
+        <span class="titem__time">${ICONS.clock} ${relTime(t.createdAt)}</span>
+        <span class="titem__pct">${progressOf(t)}%</span>
+      </div>
+      <div class="progress progress--sm" style="margin-top:8px">
+        <div class="progress__fill ${progressColor(t)}" style="width:${progressOf(t)}%"></div>
+      </div>
+    </button>
+  `).join('');
+  return el;
+}
+
+/* ============================== TIMELINE ITEM ============================== */
+function toneForStatus(s) {
+  return ({ pending:'slate', processing:'blue', completed:'green', failed:'red', cancelled:'slate' })[s] || 'violet';
+}
+function timelineItem(h) {
+  const tone = h.tone || (h.status ? toneForStatus(h.status) : 'violet');
+  return `
+    <div class="tl-item" data-tone="${tone}">
+      <div class="tl__time">[${fmtTime(h.time)}] ${relTime(h.time)}</div>
+      <div class="tl__text">${esc(h.title || 'Aktivitas')}</div>
+      ${h.note ? `<div class="tl__sub">${esc(h.note)}</div>` : ''}
+    </div>`;
+}
+
+/* ============================== TARGETS PAGE ============================== */
+function renderTargets() {
+  const wrap = document.createElement('div');
+  const all = Store.getTargets();
+  const f = state.filters;
+
+  // Filters
+  const q = f.targetSearch.trim().toLowerCase();
+  let filtered = all.filter(t => {
+    if (f.targetStatus !== 'all' && t.status !== f.targetStatus) return false;
+    if (q) {
+      const hay = (t.phone+' '+(t.reason||'')+' '+(t.note||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  wrap.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+        <div>
+          <div class="hero__title" style="font-size:17px;margin:0">Kelola Target</div>
+          <div class="hero__sub">Catat & kelola target laporan manual Anda.</div>
+        </div>
+        <button class="iconbtn iconbtn--accent" id="btnAdd" aria-label="Tambah target">${ICONS.plus}</button>
+      </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <div style="position:relative">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none">${ICONS.search}</span>
+          <input type="search" id="tSearch" placeholder="Cari nomor / alasan / catatan…" value="${esc(f.targetSearch)}" style="padding-left:40px" />
+        </div>
+      </div>
+
+      <div class="seg" id="tFilter">
+        ${['all','pending','processing','completed','failed','cancelled'].map(s => `
+          <button class="seg__btn ${f.targetStatus===s?'active':''}" data-status="${s}">${s==='all'?'Semua':STATUS[s].label}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div id="targetListContainer"></div>
+  `;
+
+  const list = document.createElement('div');
+  if (!filtered.length) {
+    list.innerHTML = all.length
+      ? emptyMini('Tidak ada hasil','Coba ubah filter atau kata kunci pencarian.')
+      : `<div class="card">${emptyMini('Belum ada target','Tambahkan target pertama untuk mulai mencatat laporan.')}
+         <div style="text-align:center;padding-bottom:8px">
+           <button class="btn btn--sm" id="btnAddEmpty">${ICONS.plus} Tambah Target</button>
+         </div></div>`;
+  } else {
+    const node = renderTargetList(filtered);
+    list.appendChild(node);
+  }
+  wrap.querySelector('#targetListContainer').appendChild(list);
+
+  // Events
+  wrap.querySelector('#btnAdd').onclick = () => openTargetForm();
+  const emptyBtn = wrap.querySelector('#btnAddEmpty');
+  if (emptyBtn) emptyBtn.onclick = () => openTargetForm();
+
+  const search = wrap.querySelector('#tSearch');
+  search.oninput = e => { state.filters.targetSearch = e.target.value; rerenderTargetsOnly(); };
+
+  wrap.querySelectorAll('#tFilter .seg__btn').forEach(b => {
+    b.onclick = () => {
+      state.filters.targetStatus = b.dataset.status;
+      render();
+    };
+  });
+  wrap.querySelectorAll('[data-target-id]').forEach(el => {
+    el.onclick = () => navigate('detail', { detailId: el.dataset.targetId });
+  });
+
+  function rerenderTargetsOnly() {
+    // Re-render tanpa kehilangan focus input
+    const focusPos = search.selectionStart;
+    render();
+    const newSearch = document.getElementById('tSearch');
+    if (newSearch) { newSearch.focus(); newSearch.setSelectionRange(focusPos, focusPos); }
+  }
+  return wrap;
+}
+
+/* ============================== DETAIL PAGE ============================== */
+function renderDetail() {
+  const wrap = document.createElement('div');
+  const t = Store.getTarget(state.detailId);
+  if (!t) {
+    wrap.innerHTML = `<div class="card">${emptyMini('Target tidak ditemukan','Target mungkin sudah dihapus.')}
+      <div style="text-align:center;padding-bottom:6px"><button class="btn btn--sm" id="bk">Kembali</button></div></div>`;
+    wrap.querySelector('#bk').onclick = () => navigate('targets');
+    return wrap;
+  }
+  const actions = (t.actions||0);
+  const prog = progressOf(t);
+
+  const targetHistory = Store.getHistory().filter(h => h.targetId === t.id);
+  const groups = {};
+  targetHistory.forEach(h => {
+    const k = new Date(h.time).toDateString();
+    (groups[k] = groups[k] || []).push(h);
+  });
+  const dayKeys = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
+
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="rowspace" style="align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div class="hero__eyebrow">Nomor Target</div>
+          <div class="hero__title" style="font-size:20px;word-break:break-all">${esc(t.phone)}</div>
+          <div class="titem__meta" style="margin-top:9px">
+            ${statusBadge(t.status)}
+            ${priorityBadge(t.priority)}
+          </div>
+        </div>
+      </div>
+      <div class="progress" style="margin-top:14px">
+        <div class="progress__fill ${progressColor(t)}" style="width:${prog}%"></div>
+      </div>
+      <div class="hero__legend"><span>Progress</span><span>${prog}%</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Informasi</h3></div>
+      <div class="card">
+        <div class="dgrid">
+          <div class="dcell"><div class="dcell__k">Kode Negara</div><div class="dcell__v">${esc(t.dial || '—')} · ${esc(t.country||'—')}</div></div>
+          <div class="dcell"><div class="dcell__k">Dibuat</div><div class="dcell__v">${fmtDT(t.createdAt)}</div></div>
+          <div class="dcell dcell--wide"><div class="dcell__k">Alasan</div><div class="dcell__v">${esc(t.reason)}</div></div>
+          ${t.note?`<div class="dcell dcell--wide"><div class="dcell__k">Catatan Tambahan</div><div class="dcell__v">${esc(t.note)}</div></div>`:''}
+          <div class="dcell"><div class="dcell__k">Tindakan Tercatat</div><div class="dcell__v">${actions} kali</div></div>
+          <div class="dcell"><div class="dcell__k">Terakhir Update</div><div class="dcell__v">${fmtDT(t.updatedAt||t.createdAt)}</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field" style="margin-bottom:10px">
+          <div class="field__label">Ubah Status</div>
+          <div class="chips" id="statusChips">
+            ${Object.keys(STATUS).map(s => `
+              <button class="chip ${t.status===s?'active':''}" data-status="${s}">${STATUS[s].label}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn--ghost btn--sm" id="btnEdit" style="flex:1">${ICONS.edit} Edit</button>
+          <button class="btn btn--ghost btn--sm" id="btnLog" style="flex:1">${ICONS.plus} Catat Tindakan</button>
+          <button class="btn btn--danger btn--sm" id="btnDel" style="flex:0 0 auto">${ICONS.trash}</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn--ghost btn--sm" id="btnNote" style="flex:1">${ICONS.edit} Update Catatan Status</button>
+        </div>
+
+        <div class="field__hint" style="margin-top:12px">${esc(NOTE_SAFE)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h3>Riwayat Aktivitas</h3>
+        <span class="small muted">${targetHistory.length} entri</span>
+      </div>
+      <div class="card">
+        ${targetHistory.length ? dayKeys.map(k => `
+          <div class="daysep">${dayLabel(groups[k][0].time)}</div>
+          <div class="timeline">${groups[k].map(timelineItem).join('')}</div>
+        `).join('') : emptyMini('Belum ada riwayat','Aktivitas untuk target ini akan muncul di sini.')}
+      </div>
+    </div>
+  `;
+
+  // Chip ubah status
+  wrap.querySelectorAll('#statusChips .chip').forEach(c => {
+    c.onclick = () => changeStatus(t.id, c.dataset.status);
+  });
+
+  wrap.querySelector('#btnEdit').onclick = () => openTargetForm(t);
+  wrap.querySelector('#btnLog').onclick = () => openLogActionForm(t);
+  wrap.querySelector('#btnDel').onclick = () => confirmDeleteTarget(t);
+  wrap.querySelector('#btnNote').onclick = () => openNoteStatusForm(t);
+
+  return wrap;
+}
+
+/* ============================== STATUS CHANGE ============================== */
+function changeStatus(id, status) {
+  const t = Store.getTarget(id);
+  if (!t || t.status === status) return;
+  const prev = t.status;
+  Store.updateTarget(id, { status });
+  Store.addHistory({
+    id: uid(), targetId: id, phone: t.phone,
+    time: Date.now(), type:'status', title:`Status diubah: ${STATUS[prev].label} → ${STATUS[status].label}`,
+    status, tone: toneForStatus(status),
+    note: statusNote(status),
+  });
+  toast('Status diperbarui', `${t.phone} → ${STATUS[status].label}`, 'success');
+  render();
+}
+function statusNote(status) {
+  return ({
+    pending:'Menunggu tindakan manual.',
+    processing:'Sedang dalam proses pelaporan manual.',
+    completed:'Proses pelaporan manual telah diselesaikan. Status akhir tidak dapat dikonfirmasi dari sini.',
+    failed:'Proses gagal atau tidak dapat dilanjutkan.',
+    cancelled:'Dibatalkan oleh pengguna.',
+  })[status] || '';
+}
+
+function openNoteStatusForm(t) {
+  openSheet({
+    title: 'Update Catatan Status',
+    sub: 'Perbarui status dan tambahkan catatan.',
+    bodyHTML: `
+      <div class="field">
+        <div class="field__label">Status</div>
+        <select id="sStatus">
+          ${Object.keys(STATUS).map(s => `<option value="${s}" ${t.status===s?'selected':''}>${STATUS[s].label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <div class="field__label">Catatan Status</div>
+        <textarea id="sNote" placeholder="Contoh: Menunggu konfirmasi / Laporan tercatat / Tidak ada informasi resmi…">${esc(statusNote(t.status))}</textarea>
+        <div class="field__hint">Gunakan istilah netral: “Laporan tercatat”, “Menunggu konfirmasi”, “Tidak ada informasi resmi”.</div>
+      </div>
+      <button class="btn" id="sSave">${ICONS.check} Simpan</button>
+    `,
+    onMount: (root, close) => {
+      root.querySelector('#sSave').onclick = () => {
+        const newStatus = root.querySelector('#sStatus').value;
+        const note = root.querySelector('#sNote').value.trim() || statusNote(newStatus);
+        Store.updateTarget(t.id, { status: newStatus });
+        Store.addHistory({
+          id: uid(), targetId: t.id, phone: t.phone,
+          time: Date.now(), type:'status',
+          title:`Status: ${STATUS[newStatus].label} · ${note}`,
+          status: newStatus, tone: toneForStatus(newStatus), note,
+        });
+        toast('Catatan disimpan', 'Status & catatan diperbarui', 'success');
+        close(); render();
+      };
+    }
+  });
+}
+
+/* ============================== LOG MANUAL ACTION ============================== */
+function openLogActionForm(t) {
+  openSheet({
+    title: 'Catat Tindakan Manual',
+    sub: 'Catat langkah manual yang sudah Anda lakukan (bukan otomatis).',
+    bodyHTML: `
+      <div class="field">
+        <div class="field__label">Jenis Tindakan</div>
+        <select id="aType">
+          <option>Report via aplikasi WhatsApp</option>
+          <option>Blokir nomor</option>
+          <option>Lapor ke WhatsApp Support</option>
+          <option>Lapor ke cekrekening.id</option>
+          <option>Lapor ke lapor.go.id</option>
+          <option>Simpan bukti screenshot</option>
+          <option>Konsultasi ke pihak berwenang</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field__label">Keterangan</div>
+        <textarea id="aNote" placeholder="Contoh: Menunggu konfirmasi dari WhatsApp."></textarea>
+      </div>
+      <button class="btn" id="aSave">${ICONS.check} Catat Tindakan</button>
+    `,
+    onMount: (root, close) => {
+      root.querySelector('#aSave').onclick = () => {
+        const type = root.querySelector('#aType').value;
+        const note = root.querySelector('#aNote').value.trim();
+        const newActions = (t.actions||0) + 1;
+        Store.updateTarget(t.id, { actions: newActions });
+        Store.addHistory({
+          id: uid(), targetId: t.id, phone: t.phone,
+          time: Date.now(), type:'action',
+          title: `Tindakan #${newActions}: ${type}`,
+          status: t.status, tone:'violet',
+          note: note || 'Tindakan manual tercatat.',
+        });
+        toast('Tindakan tercatat', `${t.phone} · ${type}`, 'success');
+        close(); render();
+      };
+    }
+  });
+}
+
+/* ============================== DELETE ============================== */
+function confirmDeleteTarget(t) {
+  openSheet({
+    title: 'Hapus Target?',
+    sub: `${t.phone} akan dihapus dari daftar beserta riwayat terkait.`,
+    bodyHTML: `
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn btn--ghost" id="dCancel">Batal</button>
+        <button class="btn btn--danger" id="dOk">Hapus</button>
+      </div>
+    `,
+    onMount: (root, close) => {
+      root.querySelector('#dCancel').onclick = close;
+      root.querySelector('#dOk').onclick = () => {
+        Store.deleteTarget(t.id);
+        Store.addHistory({
+          id: uid(), targetId: t.id, phone: t.phone,
+          time: Date.now(), type:'delete',
+          title: 'Target dihapus',
+          status: t.status, tone:'red', note:'Target dihapus dari aplikasi.'
+        });
+        toast('Target dihapus', t.phone, 'warn');
+        close(); navigate('targets');
+      };
+    }
+  });
+}
+
+/* ============================== TARGET FORM ============================== */
+function openTargetForm(existing) {
+  const isEdit = !!existing;
+  const initial = existing || {
+    dial:'+62', country:'Indonesia', phone:'', reason:REASONS[0], note:'',
+    priority:'medium', status:'pending'
+  };
+  openSheet({
+    title: isEdit ? 'Edit Target' : 'Target Baru',
+    sub: isEdit ? 'Ubah detail target laporan.' : 'Masukkan nomor target dan detail laporan.',
+    bodyHTML: `
+      <div class="input-row" style="margin-bottom:15px">
+        <div class="field field--dial">
+          <div class="field__label">Dial</div>
+          <select id="fDial">
+            ${DIALS.map(d => `<option value="${d.code}" data-country="${d.country}" ${initial.dial===d.code?'selected':''}>${d.code}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="field__label">Nomor</div>
+          <input type="tel" id="fPhone" inputmode="numeric" placeholder="81234567890" value="${esc(initial.phone.replace(/^\+?\d+/, m=>m))}" />
+        </div>
+      </div>
+      <div class="field__hint" style="margin-top:-6px;margin-bottom:14px">
+        Format internasional: <strong id="previewNum">${esc(initial.dial + ' ' + (initial.phone||'81234567890'))}</strong>
+      </div>
+
+      <div class="field">
+        <div class="field__label">Negara</div>
+        <input type="text" id="fCountry" value="${esc(initial.country)}" />
+      </div>
+
+      <div class="field">
+        <div class="field__label">Alasan Laporan</div>
+        <select id="fReason">
+          ${REASONS.map(r=>`<option ${initial.reason===r?'selected':''}>${r}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field__label">Prioritas</div>
+        <div class="chips" id="fPriority">
+          ${Object.keys(PRIORITY).map(p=>`<button class="chip ${initial.priority===p?'active':''}" data-p="${p}">${PRIORITY[p].label}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field__label">Status Awal</div>
+        <select id="fStatus">
+          ${Object.keys(STATUS).map(s=>`<option value="${s}" ${initial.status===s?'selected':''}>${STATUS[s].label}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field__label">Catatan Tambahan</div>
+        <textarea id="fNote" placeholder="Kronologi singkat, bukti, dsb.">${esc(initial.note||'')}</textarea>
+      </div>
+
+      <div class="field">
+        <div class="field__label">Tanggal Dibuat</div>
+        <input type="datetime-local" id="fCreated" value="${toLocalDT(initial.createdAt || Date.now())}" />
+      </div>
+
+      <button class="btn" id="fSave">${ICONS.check} ${isEdit?'Simpan Perubahan':'Simpan Target'}</button>
+    `,
+    onMount: (root, close) => {
+      const fDial = root.querySelector('#fDial');
+      const fPhone = root.querySelector('#fPhone');
+      const fCountry = root.querySelector('#fCountry');
+      const preview = root.querySelector('#previewNum');
+      const fPriority = root.querySelector('#fPriority');
+
+      const updatePreview = () => {
+        const v = fPhone.value.replace(/\D/g,'');
+        preview.textContent = `${fDial.value} ${v || '...'}`;
+      };
+      fDial.onchange = () => {
+        const c = fDial.selectedOptions[0].dataset.country;
+        fCountry.value = c;
+        updatePreview();
+      };
+      fPhone.oninput = updatePreview;
+      updatePreview();
+
+      fPriority.querySelectorAll('.chip').forEach(c => {
+        c.onclick = () => {
+          fPriority.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+          c.classList.add('active');
+        };
+      });
+
+      root.querySelector('#fSave').onclick = () => {
+        const dial = fDial.value;
+        const digits = fPhone.value.replace(/\D/g,'');
+        const country = fCountry.value.trim() || 'Indonesia';
+        const reason = root.querySelector('#fReason').value;
+        const priority = fPriority.querySelector('.chip.active')?.dataset.p || 'medium';
+        const status = root.querySelector('#fStatus').value;
+        const note = root.querySelector('#fNote').value.trim();
+        const dtRaw = root.querySelector('#fCreated').value;
+        const created = dtRaw ? new Date(dtRaw).getTime() : Date.now();
+
+        // Validation
+        if (digits.length < 6) return toast('Nomor tidak valid','Minimal 6 digit angka.','error');
+        if (digits.length > 15) return toast('Nomor terlalu panjang','Maksimal 15 digit.','error');
+        if (dial === '+62' && digits.startsWith('0')) {
+          return toast('Format salah','Untuk +62, hilangkan angka 0 di depan.','error');
+        }
+        const phone = `${dial}${digits}`;
+
+        // Duplicate check (only new)
+        if (!isEdit) {
+          const dup = Store.getTargets().find(x => x.phone === phone);
+          if (dup) return toast('Sudah terdaftar','Nomor ini sudah ada di daftar target.','error');
+        }
+
+        if (isEdit) {
+          Store.updateTarget(existing.id, { dial, country, phone, reason, note, priority, status, createdAt: created });
+          Store.addHistory({
+            id: uid(), targetId: existing.id, phone,
+            time: Date.now(), type:'update', title:'Target diperbarui',
+            status, tone:'amber', note: 'Detail target diubah.'
+          });
+          toast('Perubahan disimpan', phone, 'success');
+        } else {
+          const t = {
+            id: uid(), dial, country, phone, reason, note, priority, status,
+            actions: 0, createdAt: created, updatedAt: Date.now(),
+          };
+          Store.addTarget(t);
+          Store.addHistory({
+            id: uid(), targetId: t.id, phone,
+            time: Date.now(), type:'create', title:'Target ditambahkan',
+            status, tone:'blue',
+            note: `Alasan: ${reason} · Prioritas: ${PRIORITY[priority].label}`,
+          });
+          toast('Target ditambahkan', phone, 'success');
+        }
+        close();
+        render();
+      };
+    }
+  });
+}
+function toLocalDT(ts) {
+  const d = new Date(ts);
+  const z = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`;
+}
+
+/* ============================== ACTIVITY PAGE ============================== */
+function renderActivity() {
+  const wrap = document.createElement('div');
+  const history = Store.getHistory();
+
+  // Group by day
+  const groups = {};
+  history.forEach(h => {
+    const k = new Date(h.time).toDateString();
+    (groups[k] = groups[k] || []).push(h);
+  });
+  const keys = Object.keys(groups).sort((a,b)=> new Date(b) - new Date(a));
+
+  wrap.innerHTML = `
+    <div class="card hero">
+      <div class="hero__row">
+        <div style="flex:1">
+          <div class="hero__eyebrow">Activity Monitor</div>
+          <div class="hero__title" style="font-size:17px">${history.length} aktivitas tercatat</div>
+          <div class="hero__sub">Semua tindakan dicatat secara manual. Tidak ada proses otomatis.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h3>Timeline</h3>
+        <span class="small muted">${keys.length} hari</span>
+      </div>
+      <div class="card">
+        ${history.length ? keys.map(k => `
+          <div class="daysep">${dayLabel(groups[k][0].time)}</div>
+          <div class="timeline">${groups[k].map(timelineItem).join('')}</div>
+        `).join('') : emptyMini('Belum ada aktivitas','Tambahkan target untuk mulai mencatat aktivitas.')}
+      </div>
+    </div>
+  `;
+  return wrap;
+}
+
+/* ============================== HISTORY PAGE ============================== */
+function renderHistory() {
+  const wrap = document.createElement('div');
+  const f = state.filters;
+  let list = Store.getHistory();
+
+  const q = f.historySearch.trim().toLowerCase();
+  if (q) list = list.filter(h => ((h.phone||'')+' '+(h.title||'')+' '+(h.note||'')).toLowerCase().includes(q));
+  if (f.historyStatus !== 'all') list = list.filter(h => h.status === f.historyStatus);
+  if (f.historyFrom) {
+    const from = new Date(f.historyFrom + 'T00:00:00').getTime();
+    list = list.filter(h => h.time >= from);
+  }
+  if (f.historyTo) {
+    const to = new Date(f.historyTo + 'T23:59:59').getTime();
+    list = list.filter(h => h.time <= to);
+  }
+  list.sort((a,b) => f.historySort === 'newest' ? b.time - a.time : a.time - b.time);
+
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="rowspace" style="margin-bottom:12px">
+        <div>
+          <div class="hero__title" style="font-size:17px;margin:0">Riwayat Lengkap</div>
+          <div class="hero__sub">${list.length} entri ditampilkan</div>
+        </div>
+        <button class="iconbtn" id="btnClear" aria-label="Hapus semua riwayat">${ICONS.trash}</button>
+      </div>
+
+      <div class="field" style="margin-bottom:10px">
+        <div style="position:relative">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none">${ICONS.search}</span>
+          <input type="search" id="hSearch" placeholder="Cari nomor / aktivitas / catatan…" value="${esc(f.historySearch)}" style="padding-left:40px" />
+        </div>
+      </div>
+
+      <div class="seg" id="hStatus" style="margin-bottom:10px">
+        ${['all','pending','processing','completed','failed','cancelled'].map(s => `
+          <button class="seg__btn ${f.historyStatus===s?'active':''}" data-status="${s}">${s==='all'?'Semua':STATUS[s].label}</button>
+        `).join('')}
+      </div>
+
+      <div class="input-row" style="margin-bottom:10px">
+        <div class="field">
+          <div class="field__label" style="font-size:11px">Dari Tanggal</div>
+          <input type="date" id="hFrom" value="${f.historyFrom}" />
+        </div>
+        <div class="field">
+          <div class="field__label" style="font-size:11px">Sampai</div>
+          <input type="date" id="hTo" value="${f.historyTo}" />
+        </div>
+      </div>
+
+      <div class="chips" id="hSort">
+        <button class="chip ${f.historySort==='newest'?'active':''}" data-sort="newest">Terbaru</button>
+        <button class="chip ${f.historySort==='oldest'?'active':''}" data-sort="oldest">Terlama</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Daftar Riwayat</h3></div>
+      <div id="histList"></div>
+    </div>
+  `;
+
+  const listWrap = document.createElement('div');
+  if (!list.length) {
+    listWrap.innerHTML = `<div class="card">${emptyMini('Tidak ada riwayat','Coba ubah filter atau kata kunci.')}</div>`;
+  } else {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="timeline">${list.map(h => `
+      <div class="tl-item" data-tone="${h.tone || (h.status?toneForStatus(h.status):'violet')}">
+        <div class="tl__time">[${fmtTime(h.time)}] · ${fmtDate(h.time)} · ${relTime(h.time)}</div>
+        <div class="tl__text">${esc(h.phone||'—')} — ${esc(h.title||'Aktivitas')}</div>
+        ${h.note?`<div class="tl__sub">${esc(h.note)}</div>`:''}
+        ${h.status?`<div style="margin-top:7px">${statusBadge(h.status)}</div>`:''}
+      </div>
+    `).join('')}</div>`;
+    listWrap.appendChild(card);
+  }
+  wrap.querySelector('#histList').appendChild(listWrap);
+
+  // Events
+  const search = wrap.querySelector('#hSearch');
+  search.oninput = e => { state.filters.historySearch = e.target.value; rerenderHistory(); };
+
+  wrap.querySelectorAll('#hStatus .seg__btn').forEach(b => {
+    b.onclick = () => { state.filters.historyStatus = b.dataset.status; render(); };
+  });
+  wrap.querySelectorAll('#hSort .chip').forEach(c => {
+    c.onclick = () => { state.filters.historySort = c.dataset.sort; render(); };
+  });
+  wrap.querySelector('#hFrom').onchange = e => { state.filters.historyFrom = e.target.value; render(); };
+  wrap.querySelector('#hTo').onchange = e => { state.filters.historyTo = e.target.value; render(); };
+
+  wrap.querySelector('#btnClear').onclick = () => {
+    openSheet({
+      title: 'Hapus Semua Riwayat?',
+      sub: 'Seluruh riwayat aktivitas akan dihapus permanen.',
+      bodyHTML: `
+        <div class="btn-row" style="margin-top:4px">
+          <button class="btn btn--ghost" id="cCancel">Batal</button>
+          <button class="btn btn--danger" id="cOk">Hapus</button>
+        </div>
+      `,
+      onMount:(root,close)=>{
+        root.querySelector('#cCancel').onclick = close;
+        root.querySelector('#cOk').onclick = () => {
+          Store.clearHistory();
+          toast('Riwayat dihapus','Semua entri telah dihapus','warn');
+          close(); render();
+        };
+      }
+    });
+  };
+
+  function rerenderHistory() {
+    const pos = search.selectionStart;
+    render();
+    const s = document.getElementById('hSearch');
+    if (s) { s.focus(); s.setSelectionRange(pos,pos); }
+  }
+
+  return wrap;
+}
+
+/* ============================== SETTINGS PAGE ============================== */
+function renderSettings() {
+  const wrap = document.createElement('div');
+  const s = Store.getSettings();
+  const isDark = document.documentElement.dataset.theme === 'dark';
+
+  wrap.innerHTML = `
+    <div class="card hero">
+      <div class="hero__row">
+        <div class="splash__logo" style="width:60px;height:60px;font-size:28px;border-radius:20px;animation:none">🛡️</div>
+        <div style="flex:1">
+          <div class="hero__eyebrow">Report Manager</div>
+          <div class="hero__title" style="font-size:18px">v1.0.0</div>
+          <div class="hero__sub">Aplikasi pencatatan laporan manual — tanpa otomatisasi.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Tampilan</h3></div>
+      <div class="card" style="padding:6px 14px">
+        <div class="srow">
+          <div class="srow__icon" style="color:var(--accent)">${isDark?ICONS.moon:ICONS.sun}</div>
+          <div class="srow__body">
+            <div class="srow__title">Mode Gelap</div>
+            <div class="srow__desc">Ubah tema tampilan aplikasi.</div>
+          </div>
+          <div class="switch ${isDark?'on':''}" id="swTheme"></div>
+        </div>
+        <div class="srow">
+          <div class="srow__icon" style="color:var(--blue-text)">${ICONS.info}</div>
+          <div class="srow__body">
+            <div class="srow__title">Notifikasi Internal</div>
+            <div class="srow__desc">Tampilkan toast saat ada aktivitas.</div>
+          </div>
+          <div class="switch ${s.notifications?'on':''}" id="swNotif"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Data</h3></div>
+      <div class="card" style="padding:6px 14px">
+        <button class="srow srow--btn" id="btnExportJson">
+          <div class="srow__icon" style="color:var(--accent)">${ICONS.down}</div>
+          <div class="srow__body">
+            <div class="srow__title">Export JSON</div>
+            <div class="srow__desc">Salin seluruh data sebagai file JSON.</div>
+          </div>
+        </button>
+        <button class="srow srow--btn" id="btnExportCsv">
+          <div class="srow__icon" style="color:var(--accent)">${ICONS.down}</div>
+          <div class="srow__body">
+            <div class="srow__title">Export CSV</div>
+            <div class="srow__desc">Ekspor riwayat aktivitas ke CSV.</div>
+          </div>
+        </button>
+        <button class="srow srow--btn" id="btnImportJson">
+          <div class="srow__icon" style="color:var(--blue-text)">${ICONS.up}</div>
+          <div class="srow__body">
+            <div class="srow__title">Import JSON</div>
+            <div class="srow__desc">Pulihkan data dari file backup.</div>
+          </div>
+        </button>
+        <button class="srow srow--btn" id="btnBackup">
+          <div class="srow__icon" style="color:var(--violet-text)">${ICONS.shield}</div>
+          <div class="srow__body">
+            <div class="srow__title">Backup Data Lokal</div>
+            <div class="srow__desc">Download salinan lengkap (JSON).</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Zona Berbahaya</h3></div>
+      <div class="card" style="padding:6px 14px">
+        <button class="srow srow--btn srow--danger" id="btnClearAll">
+          <div class="srow__icon" style="color:var(--red-text);background:var(--red-soft)">${ICONS.trash}</div>
+          <div class="srow__body">
+            <div class="srow__title">Hapus Semua Data Lokal</div>
+            <div class="srow__desc">Menghapus seluruh target & riwayat.</div>
+          </div>
+        </button>
+        <button class="srow srow--btn srow--danger" id="btnReset">
+          <div class="srow__icon" style="color:var(--red-text);background:var(--red-soft)">${ICONS.warn}</div>
+          <div class="srow__body">
+            <div class="srow__title">Reset Aplikasi</div>
+            <div class="srow__desc">Kembalikan aplikasi ke kondisi awal.</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h3>Informasi & Privasi</h3></div>
+      <div class="card">
+        <div class="dgrid">
+          <div class="dcell"><div class="dcell__k">Total Target</div><div class="dcell__v">${Store.getTargets().length}</div></div>
+          <div class="dcell"><div class="dcell__k">Riwayat</div><div class="dcell__v">${Store.getHistory().length}</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="srow__title" style="margin-bottom:6px">${ICONS.shield} Privacy Notice</div>
+        <div class="srow__desc" style="line-height:1.7">
+          • Semua data disimpan <strong>100% lokal</strong> di perangkat Anda (localStorage).<br>
+          • Tidak ada data yang dikirim ke server manapun.<br>
+          • Tidak meminta password, OTP, session, atau cookie WhatsApp.<br>
+          • Tidak melakukan login WhatsApp, spam report, atau otomatisasi.<br>
+          • Aplikasi ini hanya alat <strong>pencatatan & pengelolaan</strong> laporan manual.
+        </div>
+        <div class="divider"></div>
+        <div class="srow__title" style="margin-bottom:6px">Cara Pelaporan Resmi</div>
+        <div class="srow__desc" style="line-height:1.7">
+          1. Buka chat di aplikasi WhatsApp<br>
+          2. Tap nama kontak → scroll ke bawah<br>
+          3. Pilih <strong>Report / Laporkan</strong><br>
+          4. Pilih alasan & kirim<br>
+          5. Blokir nomor (opsional)
+        </div>
+        <a class="section__link" style="margin-top:10px;display:inline-flex" target="_blank" rel="noopener" href="https://faq.whatsapp.com/1139854688969240">Panduan resmi WhatsApp ${ICONS.ext}</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card" style="text-align:center">
+        <div class="small muted" style="line-height:1.7">
+          Report Manager tidak berafiliasi dengan WhatsApp Inc. / Meta Platforms.<br>
+          Status resmi hanya dapat dikonfirmasi melalui aplikasi WhatsApp.
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Switches
+  wrap.querySelector('#swTheme').onclick = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const next = dark ? 'light' : 'dark';
+    setTheme(next);
+    Store.setSettings({ theme: next });
+    render();
+  };
+  wrap.querySelector('#swNotif').onclick = () => {
+    const cur = Store.getSettings().notifications;
+    Store.setSettings({ notifications: !cur });
+    toast('Notifikasi ' + (!cur?'aktif':'nonaktif'), '', 'info', 1600);
+    render();
+  };
+
+  // Data actions
+  wrap.querySelector('#btnExportJson').onclick = exportJSON;
+  wrap.querySelector('#btnExportCsv').onclick = exportCSV;
+  wrap.querySelector('#btnImportJson').onclick = importJSON;
+  wrap.querySelector('#btnBackup').onclick = exportJSON;
+
+  wrap.querySelector('#btnClearAll').onclick = () => {
+    openSheet({
+      title:'Hapus Semua Data?',
+      sub:'Target dan riwayat akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+      bodyHTML:`<div class="btn-row" style="margin-top:4px">
+        <button class="btn btn--ghost" id="cc">Batal</button>
+        <button class="btn btn--danger" id="co">Hapus Semua</button></div>`,
+      onMount:(root,close)=>{
+        root.querySelector('#cc').onclick = close;
+        root.querySelector('#co').onclick = () => {
+          localStorage.removeItem('rm.targets.v1');
+          localStorage.removeItem('rm.history.v1');
+          toast('Data dihapus','Semua target & riwayat dihapus','warn');
+          close(); location.reload();
+        };
+      }
+    });
+  };
+
+  wrap.querySelector('#btnReset').onclick = () => {
+    openSheet({
+      title:'Reset Aplikasi?',
+      sub:'Semua data & pengaturan akan kembali ke kondisi awal.',
+      bodyHTML:`<div class="btn-row" style="margin-top:4px">
+        <button class="btn btn--ghost" id="rc">Batal</button>
+        <button class="btn btn--danger" id="ro">Reset</button></div>`,
+      onMount:(root,close)=>{
+        root.querySelector('#rc').onclick = close;
+        root.querySelector('#ro').onclick = () => {
+          Store.resetAll();
+          toast('Aplikasi di-reset','', 'warn');
+          close(); setTimeout(()=>location.reload(), 300);
+        };
+      }
+    });
+  };
+
+  return wrap;
+}
+
+/* ============================== EXPORT / IMPORT ============================== */
+function download(filename, content, mime='application/octet-stream') {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 500);
+}
+function exportJSON() {
+  const data = Store.exportAll();
+  const name = `report-manager-backup-${new Date().toISOString().slice(0,10)}.json`;
+  download(name, JSON.stringify(data, null, 2), 'application/json');
+  toast('Export berhasil','File JSON diunduh','success');
+}
+function exportCSV() {
+  const hist = Store.getHistory();
+  const headers = ['Waktu','Nomor','Jenis','Aktivitas','Status','Catatan'];
+  const rows = hist.map(h => [
+    new Date(h.time).toISOString(),
+    h.phone || '',
+    h.type || '',
+    h.title || '',
+    h.status || '',
+    (h.note || '').replace(/"/g,'""'),
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  download(`report-manager-history-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+  toast('Export CSV berhasil','File CSV diunduh','success');
+}
+function importJSON() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json,application/json';
+  inp.onchange = () => {
+    const f = inp.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const parsed = JSON.parse(r.result);
+        openSheet({
+          title:'Konfirmasi Import',
+          sub:'Data saat ini akan digabungkan/ditimpa. Lanjutkan?',
+          bodyHTML:`
+            <div class="dgrid">
+              <div class="dcell"><div class="dcell__k">Target di file</div><div class="dcell__v">${Array.isArray(parsed.targets)?parsed.targets.length:0}</div></div>
+              <div class="dcell"><div class="dcell__k">Riwayat di file</div><div class="dcell__v">${Array.isArray(parsed.history)?parsed.history.length:0}</div></div>
+            </div>
+            <div class="btn-row" style="margin-top:4px">
+              <button class="btn btn--ghost" id="ic">Batal</button>
+              <button class="btn" id="io">Import Sekarang</button>
+            </div>
+          `,
+          onMount:(root,close)=>{
+            root.querySelector('#ic').onclick = close;
+            root.querySelector('#io').onclick = () => {
+              try {
+                Store.importAll(parsed);
+                toast('Import berhasil','Data berhasil dipulihkan','success');
+                close(); setTimeout(()=>render(),200);
+              } catch(e) {
+                toast('Import gagal', e.message, 'error');
+              }
+            };
+          }
+        });
+      } catch(e) {
+        toast('File tidak valid','JSON tidak dapat dibaca','error');
+      }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ============================== SHEET ============================== */
+function openSheet({ title, sub='', bodyHTML='', onMount }) {
+  const root = document.getElementById('sheetRoot');
+  root.innerHTML = `
+    <div class="sheet-backdrop">
+      <div class="sheet">
+        <div class="sheet__grab"></div>
+        <div class="sheet__head">
+          <div>
+            <div class="sheet__title">${esc(title)}</div>
+            ${sub?`<div class="sheet__sub">${esc(sub)}</div>`:''}
+          </div>
+          <button class="iconbtn" id="sheetClose">${ICONS.x}</button>
+        </div>
+        <div id="sheetBody">${bodyHTML}</div>
+      </div>
+    </div>
+  `;
+  const backdrop = root.querySelector('.sheet-backdrop');
+  const close = () => { root.innerHTML = ''; };
+  backdrop.onclick = e => { if (e.target === backdrop) close(); };
+  root.querySelector('#sheetClose').onclick = close;
+  if (onMount) onMount(root.querySelector('#sheetBody'), close);
+}
+
+/* ============================== INIT ============================== */
+(function init() {
+  // Theme
+  const s = Store.getSettings();
+  setTheme(s.theme || 'dark');
+
+  // Seed demo data on first run (only if empty and no flag)
+  const seeded = localStorage.getItem('rm.seeded.v1');
+  if (!seeded && Store.getTargets().length === 0) {
+    seedDemo();
+    localStorage.setItem('rm.seeded.v1', '1');
+  }
+
+  // Splash
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    render();
+  }, 900);
+})();
+
+function seedDemo() {
+  const now = Date.now();
+  const demo = [
+    {
+      id: uid(), dial:'+62', country:'Indonesia', phone:'+6281234567890',
+      reason:'Penipuan / Scam', priority:'high', status:'processing',
+      note:'Modus mengaku pihak bank meminta OTP.', actions:2,
+      createdAt: now - 1000*60*60*24*2, updatedAt: now - 1000*60*30,
+    },
+    {
+      id: uid(), dial:'+62', country:'Indonesia', phone:'+6289876543210',
+      reason:'Spam / Pesan Massal', priority:'medium', status:'completed',
+      note:'Pesan promosi massal berulang setiap hari.', actions:3,
+      createdAt: now - 1000*60*60*24*5, updatedAt: now - 1000*60*60*6,
+    },
+  ];
+  demo.forEach(t => Store.addTarget(t));
+
+  const ev = [
+    { targetId: demo[0].id, phone: demo[0].phone, time: now - 1000*60*60*48, type:'create', title:'Target ditambahkan', status:'pending', tone:'blue', note:'Alasan: Penipuan / Scam · Prioritas: Tinggi' },
+    { targetId: demo[0].id, phone: demo[0].phone, time: now - 1000*60*60*24, type:'action', title:'Tindakan #1: Report via aplikasi WhatsApp', status:'processing', tone:'violet', note:'Dilaporkan manual via aplikasi WhatsApp.' },
+    { targetId: demo[0].id, phone: demo[0].phone, time: now - 1000*60*45, type:'action', title:'Tindakan #2: Simpan bukti screenshot', status:'processing', tone:'violet', note:'Bukti percakapan disimpan.' },
+    { targetId: demo[1].id, phone: demo[1].phone, time: now - 1000*60*60*120, type:'create', title:'Target ditambahkan', status:'pending', tone:'blue', note:'Alasan: Spam / Pesan Massal' },
+    { targetId: demo[1].id, phone: demo[1].phone, time: now - 1000*60*60*96, type:'action', title:'Tindakan #1: Report via aplikasi WhatsApp', status:'processing', tone:'violet', note:'' },
+    { targetId: demo[1].id, phone: demo[1].phone, time: now - 1000*60*60*7, type:'status', title:'Status: Completed · Laporan tercatat', status:'completed', tone:'green', note:'Proses pelaporan manual selesai.' },
+  ];
+  ev.reverse().forEach(h => Store.addHistory({ id: uid(), ...h }));
+}
+
+/* ============================== SERVICE WORKER (offline hint) ============================== */
+// Tidak ada service worker — tetap ringan & portable untuk WebView/APK.
+</script>
+</body>
+</html>
